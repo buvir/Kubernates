@@ -164,3 +164,70 @@ If you can't access the NodePort service webapp with `MinikubeIP:NodePort`, exec
 * webapp image on Docker Hub: https://hub.docker.com/repository/docker/nanajanashia/k8s-demo-app
 * k8s official documentation: https://kubernetes.io/docs/home/
 * webapp code repo: https://gitlab.com/nanuchi/developing-with-docker/-/tree/feature/k8s-in-hour
+
+
+```
+ kubectl apply -f mongo-config.yaml
+
+ #configmap/app-config created
+
+ kubectl apply -f mongo.yaml
+
+# deployment.apps/mongo-deployment created
+#service/mongo-service created
+
+ kubectl apply -f webapp.yaml  
+
+ #deployment.apps/webapp-deployment created
+#service/webapp-service created 
+
+```
+
+1. Create the MongoDB Secret
+Run this command to create the authentication secret:
+
+cmd
+kubectl create secret generic mongo-secret ^
+  --from-literal=mongo-user=admin ^
+  --from-literal=mongo-password=password
+2. Create the MongoDB ConfigMap
+Run this command to set the connection URL:
+
+cmd
+kubectl create configmap mongo-config ^
+  --from-literal=mongo-url="mongodb://mongo-service:27017"
+3. Verify Creation
+Check that they were created successfully:
+
+cmd
+kubectl get secret mongo-secret
+kubectl get configmap mongo-config
+4. Restart Your Deployments
+Force your deployments to restart with the new configurations:
+
+cmd
+kubectl rollout restart deployment mongo-deployment
+kubectl rollout restart deployment webapp-deployment
+5. Check Pod Status
+Monitor the pods until they reach Running state:
+
+cmd
+kubectl get pods --watch
+Troubleshooting Tips
+If pods still fail:
+
+Check recent errors:
+
+cmd
+kubectl get events --sort-by=.metadata.creationTimestamp
+Examine pod details:
+
+cmd
+kubectl describe pod webapp-deployment-xxxxx
+Expected Outcome
+Within 1-2 minutes, you should see:
+
+NAME                                     READY   STATUS    RESTARTS   AGE
+mongo-deployment-xxxxx                   1/1     Running   0          1m
+webapp-deployment-xxxxx                  1/1     Running   0          1m
+Let me know if yo
